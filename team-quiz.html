@@ -1,0 +1,599 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>Инженерия сильной команды</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: one centered column on blueprint grid paper, like the deck. Screens swap: start, question, result. */
+:root {
+  --bg: #f3f5f8;
+  --surface: #ffffff;
+  --ink: #1b2236;
+  --muted: #586177;
+  --line: #d3d9e5;
+  --grid: rgba(47, 79, 168, 0.07);
+  --blue: #2f4fa8;
+  --blue-soft: #e8edf9;
+  --on-blue: #ffffff;
+  --good: #2b8560;
+  --good-soft: #e1f2e9;
+  --good-ink: #1c6446;
+  --bad: #d9692a;
+  --bad-soft: #fbeadf;
+  --bad-ink: #a4440f;
+  --font-body: 'IBM Plex Sans', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0f1420;
+    --surface: #171e2e;
+    --ink: #e8ecf5;
+    --muted: #9aa5bd;
+    --line: #2b3550;
+    --grid: rgba(120, 150, 230, 0.08);
+    --blue: #86a0f5;
+    --blue-soft: #1e2a4d;
+    --on-blue: #0f1420;
+    --good: #5cc596;
+    --good-soft: #15332a;
+    --good-ink: #8be0b8;
+    --bad: #f0935a;
+    --bad-soft: #3a2418;
+    --bad-ink: #f7b48a;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0f1420;
+  --surface: #171e2e;
+  --ink: #e8ecf5;
+  --muted: #9aa5bd;
+  --line: #2b3550;
+  --grid: rgba(120, 150, 230, 0.08);
+  --blue: #86a0f5;
+  --blue-soft: #1e2a4d;
+  --on-blue: #0f1420;
+  --good: #5cc596;
+  --good-soft: #15332a;
+  --good-ink: #8be0b8;
+  --bad: #f0935a;
+  --bad-soft: #3a2418;
+  --bad-ink: #f7b48a;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+body {
+  background-color: var(--bg);
+  background-image:
+    linear-gradient(var(--grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+  background-size: 28px 28px;
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: 1.5;
+  min-height: 100%;
+}
+.wrap {
+  max-width: 720px;
+  margin: 0 auto;
+  padding-block: 28px 56px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+.mono { font-family: var(--font-mono); }
+.eyebrow {
+  margin: 0 0 8px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--blue);
+}
+h1 {
+  margin: 0 0 24px;
+  font-size: clamp(26px, 5.4vw, 36px);
+  line-height: 1.15;
+  font-weight: 700;
+  text-wrap: balance;
+}
+h2 {
+  margin: 0 0 18px;
+  font-size: clamp(19px, 3.6vw, 22px);
+  line-height: 1.35;
+  font-weight: 600;
+  text-wrap: balance;
+  outline: none;
+}
+p { margin: 0 0 12px; }
+
+.card {
+  position: relative;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  padding: 24px;
+}
+.card::before, .card::after {
+  content: "";
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  border: 2px solid var(--blue);
+  pointer-events: none;
+}
+.card::before { top: -1px; left: -1px; border-right: 0; border-bottom: 0; }
+.card::after { bottom: -1px; right: -1px; border-left: 0; border-top: 0; }
+
+.topics { display: flex; flex-wrap: wrap; gap: 8px; margin: 16px 0 24px; padding: 0; list-style: none; }
+.topics li {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  padding: 4px 10px;
+  border: 1px solid var(--line);
+  border-radius: 2px;
+  color: var(--muted);
+}
+.note { font-size: 14px; color: var(--muted); margin: 16px 0 0; }
+
+.btn {
+  font: inherit;
+  font-weight: 600;
+  background: var(--blue);
+  color: var(--on-blue);
+  border: 1px solid var(--blue);
+  border-radius: 4px;
+  padding: 12px 22px;
+  cursor: pointer;
+}
+.btn:hover { filter: brightness(1.08); }
+.btn.ghost { background: transparent; color: var(--blue); }
+.btn.ghost:hover { background: var(--blue-soft); filter: none; }
+.btn:focus-visible, .opt:focus-visible {
+  outline: 2px solid var(--blue);
+  outline-offset: 2px;
+}
+.actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 20px; }
+
+.meta {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 8px;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--muted);
+}
+.bar { display: flex; gap: 3px; margin-bottom: 18px; }
+.seg { flex: 1; min-width: 0; height: 6px; background: var(--line); border-radius: 1px; }
+.seg.good { background: var(--good); }
+.seg.bad { background: var(--bad); }
+.seg.now { background: var(--blue); }
+
+.opts { display: flex; flex-direction: column; gap: 10px; }
+.opt {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  width: 100%;
+  min-width: 0;
+  text-align: left;
+  font: inherit;
+  color: inherit;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  padding: 12px 14px;
+  cursor: pointer;
+  transition: border-color 0.15s, background-color 0.15s;
+}
+.opt .key {
+  flex: none;
+  width: 28px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--muted);
+  border: 1px solid var(--line);
+  border-radius: 2px;
+}
+.opt .txt { min-width: 0; padding-top: 2px; overflow-wrap: anywhere; }
+.opts:not(.locked) .opt:hover { border-color: var(--blue); }
+.opts:not(.locked) .opt:hover .key { border-color: var(--blue); color: var(--blue); }
+.opts.locked .opt { cursor: default; }
+.opts.locked .opt:not(.correct):not(.wrong) { opacity: 0.6; }
+.opt.correct { border-color: var(--good); background: var(--good-soft); }
+.opt.correct .key { background: var(--good); border-color: var(--good); color: var(--surface); }
+.opt.wrong { border-color: var(--bad); background: var(--bad-soft); }
+.opt.wrong .key { background: var(--bad); border-color: var(--bad); color: var(--surface); }
+
+.fb { margin-top: 18px; padding: 14px 16px; border-left: 3px solid var(--line); background: var(--blue-soft); }
+.fb.good { border-left-color: var(--good); background: var(--good-soft); }
+.fb.bad { border-left-color: var(--bad); background: var(--bad-soft); }
+.fb .head { margin: 0 0 4px; font-weight: 700; }
+.fb.good .head { color: var(--good-ink); }
+.fb.bad .head { color: var(--bad-ink); }
+.fb .why { margin: 0 0 8px; }
+.fb .ref { margin: 0; font-family: var(--font-mono); font-size: 12px; color: var(--muted); }
+
+.score { display: flex; align-items: baseline; gap: 10px; margin: 0 0 6px; }
+.score .big { font-family: var(--font-mono); font-size: clamp(48px, 12vw, 64px); font-weight: 500; line-height: 1; }
+.score .of { font-size: 18px; color: var(--muted); }
+.verdict { font-size: 18px; font-weight: 600; margin: 0 0 16px; text-wrap: balance; }
+.review-title { margin: 28px 0 12px; font-size: 14px; font-family: var(--font-mono); letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+.miss { border-top: 1px solid var(--line); padding: 14px 0; }
+.miss:first-of-type { border-top: 0; }
+.miss .mq { margin: 0 0 8px; font-weight: 600; }
+.miss .ma, .miss .mc { margin: 0 0 4px; font-size: 15px; }
+.miss .ma b { color: var(--bad-ink); }
+.miss .mc b { color: var(--good-ink); }
+.miss .mr { margin: 6px 0 0; font-family: var(--font-mono); font-size: 12px; color: var(--muted); }
+
+@media (max-width: 480px) {
+  .card { padding: 18px 16px; }
+  .btn { width: 100%; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .opt { transition: none; }
+}
+[hidden] { display: none !important; }
+body { margin: 0; }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header>
+    <p class="eyebrow">Инженерия сильной команды</p>
+    <h1>Квиз по презентации для руководителей и HR-директоров</h1>
+  </header>
+
+  <main>
+    <section id="start" class="card" aria-labelledby="start-title">
+      <h2 id="start-title">20 вопросов по 13 слайдам</h2>
+      <p>После каждого ответа видно, верно ли он выбран, почему, и на каком слайде искать подробности. В конце будет разбор ошибок.</p>
+      <ul class="topics" aria-label="Темы">
+        <li>Синергия</li>
+        <li>Роли Белбина</li>
+        <li>Кривая Такмана</li>
+        <li>Лидерство</li>
+        <li>Пороки Ленсиони</li>
+        <li>GRPI</li>
+        <li>Фасилитация</li>
+        <li>Тимбилдинг</li>
+        <li>Оценка 360° и eNPS</li>
+      </ul>
+      <button id="go" class="btn" type="button">Начать</button>
+      <p class="note">Ответы можно выбирать клавишами 1–4. Порядок вариантов меняется при каждом прохождении.</p>
+    </section>
+
+    <section id="quiz" hidden>
+      <div class="meta"><span id="counter"></span><span id="now"></span></div>
+      <div id="bar" class="bar" aria-hidden="true"></div>
+      <div class="card">
+        <h2 id="qtext" tabindex="-1"></h2>
+        <div id="opts" class="opts" role="group" aria-labelledby="qtext"></div>
+        <div id="fb" class="fb" role="status" hidden></div>
+        <div class="actions"><button id="next" class="btn" type="button" hidden>Дальше</button></div>
+      </div>
+    </section>
+
+    <section id="result" class="card" hidden aria-live="polite"></section>
+  </main>
+</div>
+
+<script>
+(function () {
+  var SLIDE = {
+    2: 'Синергия против «Аполло-синдрома»',
+    3: 'ДНК команды: баланс ролей по Мередиту Белбину',
+    4: 'Архитектура ролей: 9 элементов',
+    5: 'Динамика развития: кривая продуктивности по Такману',
+    6: 'Эволюция лидерства',
+    7: 'Патология команды: 5 пороков по Патрику Ленсиони',
+    8: 'Диагностический радар: модель GRPI',
+    9: 'Инженерный подход к лечению пороков',
+    10: 'Фасилитация: алгоритм управления мыслью',
+    11: 'Арсенал фасилитатора',
+    12: 'Тимбилдинг: от развлечения к проектированию опыта',
+    13: 'Дашборд оценки',
+    14: 'Итог: уравнение синергии'
+  };
+
+  // Первый вариант в списке a всегда верный; порядок перемешивается при запуске.
+  var Q = [
+    { s: 2, q: 'Чем команда принципиально отличается от рабочей группы?',
+      a: ['Ограниченное число людей с взаимозависимыми ролями, единым предназначением и общими ценностями',
+          'Функциональное разделение труда и индивидуальные цели',
+          'Большее число участников и чёткие индивидуальные KPI',
+          'Отсутствие руководителя и полное равенство полномочий'],
+      why: 'В рабочей группе цели индивидуальны, и результат равен сумме вкладов (1+1+1=3). В команде роли взаимозависимы, и создаётся добавленная интеллектуальная ценность (1+1+1=5).' },
+    { s: 2, q: 'Что описывает «Аполло-синдром»?',
+      a: ['Группа суперэкспертов часто проигрывает из-за внутренней конкуренции',
+          'Команда, где все роли одинаковы и никто не спорит',
+          'Падение эффективности из-за слишком жёсткого контроля руководителя',
+          'Потеря мотивации после завершения проекта'],
+      why: 'Сильные специалисты сами по себе не гарантируют сильную команду. Без ролевых связей и общего предназначения они конкурируют друг с другом.' },
+    { s: 3, q: 'Какой вывод лежит в основе подхода Мередита Белбина?',
+      a: ['Поведение участников определяется социально-психологическими ролями, а не только профессиональными компетенциями',
+          'Профессиональных компетенций (hard skills) достаточно для сильной команды',
+          'Лучшая команда состоит из людей с одинаковым типом мышления',
+          'Роли в команде должны жёстко закрепляться за должностями'],
+      why: 'Key Insight слайда: hard skills недостаточно, поведение участников определяется их социально-психологическими ролями.' },
+    { s: 3, q: 'Какая группа ролей генерирует нестандартные решения, анализирует риски и обеспечивает узкую экспертизу?',
+      a: ['Интеллектуальные роли (Интеллект)',
+          'Роли действия',
+          'Социально направленные роли (Социум)',
+          'Лидерские роли'],
+      why: 'Интеллект отвечает за идеи, анализ и экспертизу. Действие воплощает идеи в жизнь, Социум ищет ресурсы, поддерживает гармонию и координирует работу.' },
+    { s: 4, q: 'Какую роль в схеме из 9 элементов описывают как «контролёр качества»?',
+      a: ['Педант / Финишер',
+          'Аналитик / Оценщик',
+          'Реализатор',
+          'Специалист'],
+      why: 'Педант / Финишер относится к ролям действия и доводит работу до совершенства. Аналитик / Оценщик — объективный критик, Реализатор — системный работник, Специалист — надёжный эксперт.' },
+    { s: 4, q: 'Какова цель архитектора команды при подборе ролей?',
+      a: ['Сформировать состав без «пробелов» и исключить конкуренцию за одну роль',
+          'Собрать как можно больше динамичных лидеров',
+          'Подобрать людей с максимально похожими характерами',
+          'Закрыть только интеллектуальные роли, а остальные появятся сами'],
+      why: 'Нужны все девять ролей, и каждая должна быть чьей-то основной. Тогда нет дыр в составе и нет борьбы за одну и ту же роль.' },
+    { s: 5, q: 'Что происходит с эффективностью на стадии «Шторм» (Storming)?',
+      a: ['Резко падает: борьба за влияние, сопротивление, конфликты',
+          'Растёт: появляются правила и доверие',
+          'Достигает максимума: взаимозависимость и синергия',
+          'Остаётся средней: участники осторожны и ищут границы'],
+      why: 'Рост с правилами и доверием относится к нормированию, максимум к функционированию, осторожность и поиск границ к формированию.' },
+    { s: 5, q: 'Как следует относиться к «Шторму» по Такману?',
+      a: ['Как к неизбежному и необходимому этапу на пути к стадии перформинга',
+          'Как к провалу, который нужно подавить любой ценой',
+          'Как к признаку неверного подбора людей, требующему замены команды',
+          'Как к стадии, которую можно пропустить при сильном лидере'],
+      why: 'Шторм — не провал, а необходимый этап групповой динамики. Команда проходит через него, чтобы выйти на максимальную отдачу.' },
+    { s: 6, q: 'Какой стиль лидерства подходит стадии «Формирование»?',
+      a: ['Директор / Наставник: задаёт чёткие правила и объясняет критерии оценки',
+          'Медиатор / Фасилитатор: выводит конфликты на поверхность',
+          'Партнёр / Коуч: делегирует задачи и поощряет инициативу',
+          'Визионер / Спонсор: обеспечивает ресурсы и минимизирует контроль'],
+      why: 'На старте участникам нужны правила и ясные критерии. Остальные стили соответствуют шторму, нормированию и перформингу.' },
+    { s: 6, q: 'Что делает лидер-медиатор на стадии «Шторм»?',
+      a: ['Не замалчивает конфликты, выводит их на поверхность и помогает выработать конструктивную обратную связь',
+          'Задаёт жёсткие правила и пресекает споры',
+          'Делегирует задачи и поощряет выработку командных договорённостей',
+          'Фокусируется на стратегии и внешних вызовах, минимизируя контроль'],
+      why: 'Подавленный конфликт не исчезает. Задача лидера на этой стадии — превратить его в конструктивную обратную связь.' },
+    { s: 7, q: 'Что находится в основании пирамиды пороков по Патрику Ленсиони?',
+      a: ['Недоверие: скрытая уязвимость и страх показаться слабым',
+          'Боязнь конфликта: искусственная гармония',
+          'Безответственность: двусмысленность и отсутствие принятых решений',
+          'Безразличие к результатам: фокус на личном статусе'],
+      why: 'Основание — недоверие, поверх него идут боязнь конфликта, безответственность, нетребовательность, а на вершине безразличие к результатам.' },
+    { s: 7, q: 'Искусственная гармония и замалчивание проблем — признак какого порока?',
+      a: ['Боязнь конфликта',
+          'Нетребовательность',
+          'Недоверие',
+          'Безответственность'],
+      why: 'Нетребовательность — это низкие стандарты и игнорирование ошибок коллег. Недоверие — скрытая уязвимость. Безответственность — двусмысленность и отсутствие решений.' },
+    { s: 8, q: 'В каком направлении по модели GRPI нужно проводить диагностику и лечение?',
+      a: ['Сверху вниз: цели, роли, процессы, взаимоотношения',
+          'Снизу вверх: сначала взаимоотношения, затем цели',
+          'Только на уровне личных конфликтов',
+          'Каждый уровень независимо и в произвольном порядке'],
+      why: 'Большинство межличностных конфликтов — симптом, а не причина. Поэтому сначала проверяются Goals, затем Roles, Processes и только потом Interpersonal.' },
+    { s: 9, q: 'В команде безответственность и наложение задач. Что лечить по GRPI?',
+      a: ['Уровень Roles: прояснить границы и полномочия',
+          'Уровень Goals: актуализировать личные и командные цели',
+          'Уровень Processes: ввести правила обратной связи',
+          'Уровень Interpersonal: провести медиацию'],
+      why: 'Когда задачи накладываются друг на друга, не определены зоны ответственности. Это вопрос уровня Roles.' },
+    { s: 9, q: 'Что GRPI предлагает при боязни конфликта и искусственной гармонии?',
+      a: ['Оптимизация Processes: правила обратной связи и регулярные статус-встречи',
+          'Калибровка Goals: актуализация личных и командных целей',
+          'Уточнение Roles: прояснение границ и полномочий',
+          'Интеллектуальный тимбилдинг и медиация на уровне Interpersonal'],
+      why: 'Тимбилдинг и медиация нужны при недоверии и токсичности. Боязнь конфликта лечится процессами: правилами обратной связи и регулярными встречами.' },
+    { s: 10, q: 'Что происходит на этапе расходящегося мышления (Divergent)?',
+      a: ['Генерация идей без ограничений и оценок, максимальное расширение поля вариантов',
+          'Систематизация и кластеризация идей',
+          'Выбор наиболее удачных вариантов и формирование плана действий',
+          'Фасилитатор предлагает готовое решение'],
+      why: 'Это первый этап. Второй, сходящийся (Convergent), включает систематизацию, оценку и план. Фасилитатор готовых решений не предлагает, он управляет динамикой поиска.' },
+    { s: 11, q: 'Для чего служит «парковка идей»?',
+      a: ['Для выноса нерелевантных тем за рамки текущей встречи',
+          'Для сбора максимального объёма идей',
+          'Для обсуждения в малых группах с перемещением участников',
+          'Для оценки идей по сложности реализации и влиянию на результат'],
+      why: 'Парковка относится к инфраструктуре фасилитации. Сбор идей — мозговой штурм, малые группы — Мировое кафе, оценка по осям — матрицы приоритизации.' },
+    { s: 12, q: 'Каков цикл обучения через опыт в современном тимбилдинге?',
+      a: ['Погружение в опыт → рефлексия под контролем тренера → новые установки → изменение поведения на рабочем месте',
+          'Погружение в опыт → новые установки → рефлексия → изменение поведения',
+          'Развлечение → эмоциональный всплеск → возвращение к задачам',
+          'Лекция → тест → оценка → премирование'],
+      why: 'Ключевой шаг — рефлексия под контролем тренера. Без неё опыт остаётся эмоциональным всплеском и не меняет рабочее поведение.' },
+    { s: 13, q: 'Что сравнивает оценка 360°?',
+      a: ['Самооценку сотрудника с мнением коллег',
+          'Плановые и фактические KPI команды',
+          'Результаты команды с результатами конкурентов',
+          'Уровень вовлечённости сегодня и месяц назад'],
+      why: 'Метод выявляет дисбаланс soft skills, неочевидные конфликты и ролевые перекосы. Вовлечённость во времени отслеживают пульс-опросами (eNPS).' },
+    { s: 14, q: 'Как сформулирован главный вывод презентации о синергии?',
+      a: ['Синергия — не случайность, а результат осознанного организационного проектирования',
+          'Синергия возникает сама, если нанять лучших экспертов',
+          'Синергия — свойство отдельных харизматичных лидеров',
+          'Синергия достигается только регулярным тимбилдингом'],
+      why: 'Четыре опоры: сбалансированные роли (Белбин), управляемый шторм (Такман), здоровые системы и процессы (GRPI), профессиональная фасилитация. Девиз: измеряйте, диагностируйте, проектируйте.' }
+  ];
+
+  var LETTERS = ['А', 'Б', 'В', 'Г'];
+  var $ = function (id) { return document.getElementById(id); };
+  var deck = [], idx = 0, res = [], answered = false;
+
+  function shuffle(arr) {
+    var a = arr.slice();
+    for (var i = a.length - 1; i > 0; i--) {
+      var j = Math.floor(Math.random() * (i + 1));
+      var t = a[i]; a[i] = a[j]; a[j] = t;
+    }
+    return a;
+  }
+  function show(name) {
+    ['start', 'quiz', 'result'].forEach(function (n) { $(n).hidden = (n !== name); });
+    try { window.scrollTo(0, 0); } catch (e) {}
+  }
+  function build(indexes) {
+    return indexes.map(function (k) {
+      var o = Q[k];
+      return { k: k, s: o.s, q: o.q, why: o.why, correct: o.a[0], opts: shuffle(o.a) };
+    });
+  }
+  function begin(indexes) {
+    deck = build(indexes);
+    idx = 0; res = []; answered = false;
+    show('quiz');
+    renderQ();
+  }
+  function renderBar(target, now) {
+    var h = '';
+    for (var i = 0; i < deck.length; i++) {
+      var c = 'seg';
+      if (res[i]) c += res[i].ok ? ' good' : ' bad';
+      else if (now && i === idx) c += ' now';
+      h += '<span class="' + c + '"></span>';
+    }
+    target.innerHTML = h;
+  }
+  function score() { return res.filter(function (r) { return r && r.ok; }).length; }
+
+  function renderQ() {
+    var d = deck[idx];
+    answered = false;
+    $('counter').textContent = 'Вопрос ' + (idx + 1) + ' из ' + deck.length;
+    $('now').textContent = 'Верно: ' + score();
+    renderBar($('bar'), true);
+    $('qtext').textContent = d.q;
+    var box = $('opts');
+    box.className = 'opts';
+    box.innerHTML = '';
+    d.opts.forEach(function (text, i) {
+      var b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'opt';
+      b.setAttribute('data-i', i);
+      b.innerHTML = '<span class="key" aria-hidden="true">' + LETTERS[i] + '</span><span class="txt"></span>';
+      b.lastChild.textContent = text;
+      b.addEventListener('click', function () { choose(i); });
+      box.appendChild(b);
+    });
+    $('fb').hidden = true;
+    $('next').hidden = true;
+    $('qtext').focus({ preventScroll: true });
+  }
+
+  function choose(i) {
+    if (answered) return;
+    var d = deck[idx];
+    if (i < 0 || i >= d.opts.length) return;
+    answered = true;
+    var picked = d.opts[i];
+    var ok = picked === d.correct;
+    res[idx] = { ok: ok, picked: picked };
+    var box = $('opts');
+    box.className = 'opts locked';
+    Array.prototype.forEach.call(box.children, function (b, n) {
+      var key = b.firstChild;
+      if (d.opts[n] === d.correct) { b.classList.add('correct'); key.textContent = '✓'; }
+      else if (n === i) { b.classList.add('wrong'); key.textContent = '✕'; }
+    });
+    var fb = $('fb');
+    fb.className = 'fb ' + (ok ? 'good' : 'bad');
+    fb.innerHTML = '<p class="head"></p><p class="why"></p><p class="ref"></p>';
+    fb.children[0].textContent = ok ? 'Верно' : 'Неверно';
+    fb.children[1].textContent = d.why;
+    fb.children[2].textContent = 'Слайд ' + d.s + ' · ' + SLIDE[d.s];
+    fb.hidden = false;
+    $('now').textContent = 'Верно: ' + score();
+    renderBar($('bar'), false);
+    var nb = $('next');
+    nb.textContent = idx === deck.length - 1 ? 'Показать результат' : 'Дальше';
+    nb.hidden = false;
+    nb.focus({ preventScroll: true });
+    try { nb.scrollIntoView({ block: 'nearest', behavior: 'smooth' }); } catch (e) {}
+  }
+
+  function verdict(p) {
+    if (p >= 90) return 'Отлично. Материал усвоен.';
+    if (p >= 70) return 'Хорошо. Несколько тем стоит повторить.';
+    if (p >= 50) return 'Базовый уровень. Пересмотрите слайды из разбора ниже.';
+    return 'Стоит пройти презентацию ещё раз и вернуться к квизу.';
+  }
+
+  function renderResult() {
+    var n = deck.length, sc = score(), pct = Math.round(sc / n * 100);
+    var wrong = [];
+    deck.forEach(function (d, i) { if (!res[i].ok) wrong.push(i); });
+    var r = $('result');
+    r.innerHTML =
+      '<div class="score"><span class="big">' + sc + '</span><span class="of">из ' + n + '</span></div>' +
+      '<p class="verdict"></p>' +
+      '<div id="rbar" class="bar" aria-hidden="true"></div>' +
+      '<div class="actions" id="ract"></div>' +
+      '<div id="rev"></div>';
+    r.querySelector('.verdict').textContent = verdict(pct);
+    renderBar($('rbar'), false);
+    var act = $('ract');
+    var again = document.createElement('button');
+    again.type = 'button'; again.className = 'btn'; again.textContent = 'Пройти заново';
+    again.addEventListener('click', function () { begin(Q.map(function (_, k) { return k; })); });
+    act.appendChild(again);
+    if (wrong.length) {
+      var retry = document.createElement('button');
+      retry.type = 'button'; retry.className = 'btn ghost';
+      retry.textContent = 'Повторить ошибки (' + wrong.length + ')';
+      retry.addEventListener('click', function () { begin(wrong.map(function (i) { return deck[i].k; })); });
+      act.appendChild(retry);
+    }
+    var rev = $('rev');
+    if (!wrong.length) {
+      rev.innerHTML = '<p class="review-title">Разбор</p><p>Ошибок нет, все ответы верны.</p>';
+    } else {
+      rev.innerHTML = '<p class="review-title">Разбор ошибок</p>';
+      wrong.forEach(function (i) {
+        var d = deck[i];
+        var m = document.createElement('div');
+        m.className = 'miss';
+        m.innerHTML = '<p class="mq"></p><p class="ma">Ваш ответ: <b></b></p><p class="mc">Верный ответ: <b></b></p><p class="mr"></p>';
+        m.querySelector('.mq').textContent = d.q;
+        m.querySelector('.ma b').textContent = res[i].picked;
+        m.querySelector('.mc b').textContent = d.correct;
+        m.querySelector('.mr').textContent = 'Слайд ' + d.s + ' · ' + SLIDE[d.s];
+        rev.appendChild(m);
+      });
+    }
+    show('result');
+  }
+
+  $('go').addEventListener('click', function () { begin(Q.map(function (_, k) { return k; })); });
+  $('next').addEventListener('click', function () {
+    if (idx >= deck.length - 1) { renderResult(); return; }
+    idx++;
+    renderQ();
+  });
+  document.addEventListener('keydown', function (e) {
+    if ($('quiz').hidden || answered || e.ctrlKey || e.metaKey || e.altKey) return;
+    var n = parseInt(e.key, 10);
+    if (n >= 1 && n <= 4) choose(n - 1);
+  });
+})();
+</script>
+
+</body>
+</html>
